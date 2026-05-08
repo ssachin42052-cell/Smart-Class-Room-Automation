@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Classroom Automation</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:Arial,sans-serif;
+    }
+
+    body{
+      background:#eef3f7;
+    }
+
+    /* LOGIN */
+
+    #loginPage{
+      height:100vh;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      background:linear-gradient(to right,#141e30,#243b55);
+    }
+
+    .login-box{
+      width:350px;
+      background:white;
+      padding:40px;
+      border-radius:15px;
+      text-align:center;
+      box-shadow:0 0 15px rgba(0,0,0,0.3);
+    }
+
+    .login-box h2{
+      margin-bottom:20px;
+      color:#243b55;
+    }
+
+    .login-box input{
+      width:100%;
+      padding:12px;
+      margin:10px 0;
+      border-radius:8px;
+      border:1px solid #ccc;
+      font-size:16px;
+    }
+
+    .login-box button{
+      width:100%;
+      padding:12px;
+      background:#007bff;
+      color:white;
+      border:none;
+      border-radius:8px;
+      font-size:18px;
+      cursor:pointer;
+    }
+
+    .login-box button:hover{
+      background:#0056b3;
+    }
+
+    #error{
+      color:red;
+      margin-top:10px;
+    }
+
+    /* DASHBOARD */
+
+    #dashboard{
+      display:none;
+    }
+
+    .sidebar{
+      width:230px;
+      height:100vh;
+      background:#1e293b;
+      color:white;
+      position:fixed;
+      padding-top:20px;
+    }
+
+    .sidebar h2{
+      text-align:center;
+      margin-bottom:30px;
+    }
+
+    .sidebar ul{
+      list-style:none;
+    }
+
+    .sidebar ul li{
+      padding:15px 25px;
+      border-bottom:1px solid rgba(255,255,255,0.1);
+      cursor:pointer;
+    }
+
+    .sidebar ul li:hover{
+      background:#334155;
+    }
+
+    .main{
+      margin-left:230px;
+      padding:20px;
+    }
+
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:20px;
+    }
+
+    .cards{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+      gap:20px;
+    }
+
+    .card{
+      background:white;
+      padding:20px;
+      border-radius:15px;
+      box-shadow:0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .card h3{
+      margin-bottom:10px;
+      color:#333;
+    }
+
+    .value{
+      font-size:32px;
+      font-weight:bold;
+      color:#007bff;
+    }
+
+    .middle{
+      margin-top:25px;
+      display:grid;
+      grid-template-columns:2fr 1fr;
+      gap:20px;
+    }
+
+    .graph-box,
+    .alert-box{
+      background:white;
+      padding:20px;
+      border-radius:15px;
+      box-shadow:0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .alert{
+      background:#f1f5f9;
+      padding:12px;
+      border-radius:10px;
+      margin-top:10px;
+    }
+
+    .bottom{
+      margin-top:25px;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:20px;
+    }
+
+    .box{
+      background:white;
+      padding:20px;
+      border-radius:15px;
+      box-shadow:0 0 10px rgba(0,0,0,0.1);
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      margin-top:15px;
+    }
+
+    table th,
+    table td{
+      border:1px solid #ddd;
+      padding:10px;
+      text-align:center;
+    }
+
+    table th{
+      background:#007bff;
+      color:white;
+    }
+
+    .status{
+      text-align:center;
+      margin-top:40px;
+    }
+
+    .status h1{
+      color:#007bff;
+      font-size:40px;
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+<!-- LOGIN -->
+
+<div id="loginPage">
+
+  <div class="login-box">
+
+    <h2>🏫 Smart Classroom Login</h2>
+
+    <input type="text" id="username" placeholder="Enter Username">
+
+    <input type="password" id="password" placeholder="Enter Password">
+
+    <button onclick="login()">Login</button>
+
+    <p id="error"></p>
+
+  </div>
+
+</div>
+
+<!-- DASHBOARD -->
+
+<div id="dashboard">
+
+  <!-- SIDEBAR -->
+
+  <div class="sidebar">
+
+    <h2>🏫 Classroom AI</h2>
+
+    <ul>
+      <li>Dashboard</li>
+      <li>PIR Sensor</li>
+      <li>DHT11 Sensor</li>
+      <li>AC Automation</li>
+      <li>Analytics</li>
+      <li>Alerts</li>
+      <li onclick="logout()">Logout</li>
+    </ul>
+
+  </div>
+
+  <!-- MAIN -->
+
+  <div class="main">
+
+    <div class="topbar">
+
+      <h1>Smart Classroom Automation System</h1>
+
+      <h3>📡 Live Monitoring</h3>
+
+    </div>
+
+    <!-- TOP CARDS -->
+
+    <div class="cards">
+
+      <div class="card">
+        <h3>PIR Motion Detection</h3>
+        <div class="value" id="motion">No Motion</div>
+      </div>
+
+      <div class="card">
+        <h3>Temperature</h3>
+        <div class="value" id="temperature">0°C</div>
+      </div>
+
+      <div class="card">
+        <h3>Humidity</h3>
+        <div class="value" id="humidity">0%</div>
+      </div>
+
+      <div class="card">
+        <h3>AC Status</h3>
+        <div class="value" id="acStatus">OFF</div>
+      </div>
+
+    </div>
+
+    <!-- GRAPH + ALERT -->
+
+    <div class="middle">
+
+      <div class="graph-box">
+
+        <h2>Temperature & Humidity Graph</h2>
+
+        <br>
+
+        <canvas id="myChart"></canvas>
+
+      </div>
+
+      <div class="alert-box">
+
+        <h2>Live Alerts</h2>
+
+        <div class="alert" id="alert1">
+          🚶 No motion detected
+        </div>
+
+        <div class="alert" id="alert2">
+          ❄ AC is OFF
+        </div>
+
+        <div class="alert">
+          ✅ Classroom system active
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- BOTTOM -->
+
+    <div class="bottom">
+
+      <div class="box">
+
+        <h2>Sensor Live Data</h2>
+
+        <table>
+
+          <thead>
+
+            <tr>
+              <th>Motion</th>
+              <th>Temperature</th>
+              <th>Humidity</th>
+              <th>AC</th>
+            </tr>
+
+          </thead>
+
+          <tbody id="tableBody">
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+      <div class="box">
+
+        <h2>Automation Status</h2>
+
+        <div class="status">
+
+          <h1 id="classStatus">🟢 ACTIVE</h1>
+
+          <br>
+
+          <p>Automatic classroom monitoring running.</p>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+
+  // LOGIN
+
+  function login(){
+
+    let user = document.getElementById("username").value;
+
+    let pass = document.getElementById("password").value;
+
+    if(user === "aman" && pass === "aman.123"){
+
+      document.getElementById("loginPage").style.display = "none";
+
+      document.getElementById("dashboard").style.display = "block";
+
+      startLiveData();
+
+    }
+
+    else{
+
+      document.getElementById("error").innerHTML =
+      "Wrong Username or Password";
+
+    }
+
+  }
+
+  // LOGOUT
+
+  function logout(){
+
+    document.getElementById("dashboard").style.display = "none";
+
+    document.getElementById("loginPage").style.display = "flex";
+
+  }
+
+  // CHART
+
+  const ctx = document.getElementById("myChart");
+
+  const chart = new Chart(ctx, {
+
+    type:'line',
+
+    data:{
+
+      labels:[],
+
+      datasets:[
+
+        {
+          label:'Temperature',
+          data:[],
+          borderWidth:3
+        },
+
+        {
+          label:'Humidity',
+          data:[],
+          borderWidth:3
+        }
+
+      ]
+
+    },
+
+    options:{
+      responsive:true
+    }
+
+  });
+
+  // LIVE DATA
+
+  let counter = 1;
+
+  function startLiveData(){
+
+    updateData();
+
+    setInterval(updateData,3000);
+
+  }
+
+  function updateData(){
+
+    // RANDOM SENSOR VALUES
+
+    let motion = Math.random() > 0.5 ? "Detected" : "No Motion";
+
+    let temperature = Math.floor(Math.random()*10)+24;
+
+    let humidity = Math.floor(Math.random()*30)+45;
+
+    let ac = temperature > 30 ? "ON" : "OFF";
+
+    // UPDATE CARDS
+
+    document.getElementById("motion").innerHTML = motion;
+
+    document.getElementById("temperature").innerHTML =
+    temperature + "°C";
+
+    document.getElementById("humidity").innerHTML =
+    humidity + "%";
+
+    document.getElementById("acStatus").innerHTML = ac;
+
+    // ALERTS
+
+    if(motion === "Detected"){
+
+      document.getElementById("alert1").innerHTML =
+      "🚶 Student movement detected";
+
+    }
+
+    else{
+
+      document.getElementById("alert1").innerHTML =
+      "🚶 No motion detected";
+
+    }
+
+    if(ac === "ON"){
+
+      document.getElementById("alert2").innerHTML =
+      "❄ AC turned ON automatically";
+
+    }
+
+    else{
+
+      document.getElementById("alert2").innerHTML =
+      "❄ AC is OFF";
+
+    }
+
+    // STATUS
+
+    if(motion === "Detected"){
+
+      document.getElementById("classStatus").innerHTML =
+      "🟢 CLASS ACTIVE";
+
+    }
+
+    else{
+
+      document.getElementById("classStatus").innerHTML =
+      "🟡 CLASS EMPTY";
+
+    }
+
+    // TABLE UPDATE
+
+    let row = `
+      <tr>
+        <td>${motion}</td>
+        <td>${temperature}°C</td>
+        <td>${humidity}%</td>
+        <td>${ac}</td>
+      </tr>
+    `;
+
+    document.getElementById("tableBody").innerHTML =
+    row + document.getElementById("tableBody").innerHTML;
+
+    // GRAPH UPDATE
+
+    chart.data.labels.push("T" + counter);
+
+    chart.data.datasets[0].data.push(temperature);
+
+    chart.data.datasets[1].data.push(humidity);
+
+    if(chart.data.labels.length > 10){
+
+      chart.data.labels.shift();
+
+      chart.data.datasets[0].data.shift();
+
+      chart.data.datasets[1].data.shift();
+
+    }
+
+    chart.update();
+
+    counter++;
+
+  }
+
+</script>
+
+</body>
+</html>
